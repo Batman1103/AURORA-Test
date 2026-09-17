@@ -14,25 +14,42 @@ def make_feature_row(work: pd.DataFrame, ts: pd.Timestamp) -> pd.DataFrame:
     row = work.iloc[-1].copy()
     row["timestamp"] = ts
 
-    # For real operation, replace these persistence values with a weather forecast.
-    # The forecast service should supply the next 96 rows of weather/exogenous data.
-    for c in [
-        "temperature_c", "wind_speed_ms", "wind_direction_deg", "pressure_mslp",
-        "radiation_profile_value", "solar_availability"
-    ]:
-        row[c] = work[c].iloc[-1]
+    # Environmental feature defaults and schema-resilient mapping
+    defaults = {
+        "temperature_c": -15.0,
+        "wind_speed_ms": 12.0,
+        "wind_direction_deg": 180.0,
+        "pressure_mslp": 990.0,
+        "radiation_profile_value": 0.0,
+        "solar_availability": 0.0,
+    }
+    for c, def_val in defaults.items():
+        if c in work.columns:
+            row[c] = work[c].iloc[-1]
+        elif c == "wind_speed_ms" and "wind_speed_mps" in work.columns:
+            row[c] = work["wind_speed_mps"].iloc[-1]
+        elif c == "pressure_mslp" and "pressure_hpa" in work.columns:
+            row[c] = work["pressure_hpa"].iloc[-1]
+        elif c == "radiation_profile_value" and "solar_radiation_wm2" in work.columns:
+            row[c] = float(np.clip(work["solar_radiation_wm2"].iloc[-1] / 1000.0, 0.0, 1.0))
+        elif c == "solar_availability" and "solar_radiation_wm2" in work.columns:
+            row[c] = 1.0 if work["solar_radiation_wm2"].iloc[-1] > 5.0 else 0.0
+        else:
+            row[c] = def_val
 
     temp = pd.DataFrame([row])
     temp = add_time_features(temp)
 
+    load_col = "station_load_kw" if "station_load_kw" in work.columns else ("load_kw" if "load_kw" in work.columns else work.columns[0])
+
     for lag in LAG_STEPS:
         temp[f"load_lag_{lag}_15m"] = (
-            work["station_load_kw"].iloc[-lag]
-            if len(work) >= lag else work["station_load_kw"].iloc[0]
+            work[load_col].iloc[-lag]
+            if len(work) >= lag else work[load_col].iloc[0]
         )
 
     for window in (4, 16, 96):
-        temp[f"load_roll_{window}"] = work["station_load_kw"].tail(window).mean()
+        temp[f"load_roll_{window}"] = work[load_col].tail(window).mean()
 
     return temp
 

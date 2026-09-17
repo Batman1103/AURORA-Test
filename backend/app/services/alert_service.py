@@ -6,22 +6,25 @@ from .state_service import state_service
 class AlertService:
     def build(self, station: str) -> list[dict]:
         state = state_service.get(station)
+        now = datetime.now()
+        t1 = (now.replace(minute=max(0, (now.minute - 15) % 60))).strftime("%I:%M %p")
+        t2 = (now.replace(minute=max(0, (now.minute - 45) % 60))).strftime("%I:%M %p")
         alerts = [
             {
                 "id": "fuel-efficiency",
                 "severity": "warning",
-                "title": "High fuel consumption",
-                "body": "Generator dispatch is above the modeled efficiency band.",
-                "timestamp": "10:15 AM",
+                "title": "Fuel consumption watch",
+                "body": "Generator dispatch is operating near the upper efficiency threshold.",
+                "timestamp": t1,
                 "action": "Shift flexible load and re-run optimization",
             },
             {
-                "id": "polar-night",
+                "id": "polar-weather",
                 "severity": "info",
-                "title": "Polar night approaching",
-                "body": "Solar contribution is expected to decline over the coming period.",
-                "timestamp": "09:40 AM",
-                "action": "Increase wind utilization and battery reserve",
+                "title": "Polar weather pattern active",
+                "body": "Renewable generation fluctuating with local atmospheric gradient.",
+                "timestamp": t2,
+                "action": "Increase wind turbine utilization and monitor battery SOC",
             },
         ]
         if state.fuel_litres < settings.fuel_reserve_litres * 1.5:

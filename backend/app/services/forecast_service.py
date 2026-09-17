@@ -88,16 +88,25 @@ class ForecastService:
             "solar_availability",
         ]
 
+        defaults = {
+            "temperature_c": -15.0,
+            "wind_speed_ms": 12.0,
+            "wind_direction_deg": 180.0,
+            "pressure_mslp": 990.0,
+            "radiation_profile_value": 0.0,
+            "solar_availability": 0.0,
+        }
+
         for step in range(1, steps + 1):
             ts = last_ts + pd.Timedelta(minutes=self.interval_minutes * step)
             # Try to find a matching historical row for this timestamp
             match = subset[subset["timestamp"] == ts]
             if not match.empty:
                 src = match.iloc[0]
-                vals = {c: src.get(c, float(last_row.get(c, 0.0))) for c in env_cols}
+                vals = {c: float(src.get(c, last_row.get(c, defaults[c]))) for c in env_cols}
             else:
-                # Persistence fallback (clearly isolated)
-                vals = {c: float(last_row.get(c, 0.0)) for c in env_cols}
+                # Persistence fallback with defaults
+                vals = {c: float(last_row.get(c, defaults[c])) for c in env_cols}
 
             row = {"timestamp": ts}
             row.update(vals)
