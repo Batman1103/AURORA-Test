@@ -26,10 +26,25 @@ class StateService:
     def set_mode(self, station: str, mode: str) -> None:
         self.get(station).mode = mode
 
+    SCENARIO_PRESETS = {
+        "normal": {"battery_soc": 72.0, "fuel_litres": 218400.0, "mode": "Normal"},
+        "blizzard": {"battery_soc": 42.0, "fuel_litres": 182000.0, "mode": "Emergency"},
+        "generator_derate": {"battery_soc": 55.0, "fuel_litres": 140000.0, "mode": "Fuel Conservation"},
+        "fuel_conservation": {"battery_soc": 80.0, "fuel_litres": 41000.0, "mode": "Fuel Conservation"},
+        "battery_depleted": {"battery_soc": 18.0, "fuel_litres": 195000.0, "mode": "Emergency"},
+    }
+
     def set_scenario(self, station: str, scenario: str, battery_soc: float | None = None, fuel_litres: float | None = None) -> StationState:
         state = self.get(station)
+        sc_lower = scenario.lower().replace(" ", "_")
         with self._lock:
             state.scenario = scenario
+            preset = self.SCENARIO_PRESETS.get(sc_lower)
+            if preset:
+                state.battery_soc = preset["battery_soc"]
+                state.fuel_litres = preset["fuel_litres"]
+                state.mode = preset["mode"]
+
             if battery_soc is not None:
                 state.battery_soc = float(max(5.0, min(95.0, battery_soc)))
             if fuel_litres is not None:

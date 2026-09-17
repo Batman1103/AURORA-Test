@@ -38,3 +38,12 @@ class SQLiteStore:
                 "INSERT INTO optimization_runs(created_at, station, mode, horizon_hours, fuel_saved_litres, reliability_pct) VALUES (?, ?, ?, ?, ?, ?)",
                 (created_at, station, mode, horizon_hours, fuel_saved_litres, reliability_pct),
             )
+
+    def get_optimization_runs(self, limit: int = 20) -> list[dict]:
+        with sqlite3.connect(self.path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.execute(
+                "SELECT id, created_at, station, mode, horizon_hours, fuel_saved_litres, reliability_pct FROM optimization_runs ORDER BY id DESC LIMIT ?",
+                (limit,)
+            )
+            return [dict(row) for row in cursor.fetchall()]

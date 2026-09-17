@@ -38,6 +38,10 @@ export const api = {
   async getAlerts(station = 'bharati') {
     return request(`/api/alerts?station=${encodeURIComponent(station)}`);
   },
+  async getOptimizationHistory(limit = 10) {
+    const data = await request(`/api/optimization/history?limit=${limit}`);
+    return data?.runs || [];
+  },
   async runOptimization({station, mode, horizon}) {
     const data = await request('/api/optimization/run', {method:'POST', body:JSON.stringify({station: station.toLowerCase().split(' ')[0], mode, horizon})});
     if (data) return {
@@ -46,7 +50,7 @@ export const api = {
       renewableUtilization: data.renewable_utilization,
     };
     await new Promise(resolve => setTimeout(resolve, 700));
-    return {station,mode,horizon,fuelSavedLitres:184,reliability:99.98,renewableUtilization:41};
+    return {station,mode,horizon,fuelSavedLitres:184,reliability:99.98,renewableUtilization:41,dispatch:[],recommendations:[]};
   },
   async runScenario({station, scenario, batterySoc, fuelLitres}) {
     return request('/api/simulation/scenario', {method:'POST', body:JSON.stringify({station: station.toLowerCase().split(' ')[0], scenario, battery_soc:batterySoc, fuel_litres:fuelLitres})});

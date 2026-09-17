@@ -1,5 +1,8 @@
 import pandas as pd
-from backend.app.services.forecast_service import ForecastService
+try:
+    from backend.app.services.forecast_service import ForecastService
+except ModuleNotFoundError:
+    from app.services.forecast_service import ForecastService
 
 
 def test_forecast_integration():
