@@ -24,39 +24,7 @@ ANTARCTIC_STATIONS: dict[str, dict[str, Any]] = {
         "lon": 11.7333,
         "fallback_temp": -18.6,
         "fallback_wind": 13.5,
-    },
-    "carlini": {
-        "name": "Carlini Base",
-        "region": "King George Island (Coastal)",
-        "lat": -62.2378,
-        "lon": -58.6472,
-        "fallback_temp": -6.0,
-        "fallback_wind": 16.0,
-    },
-    "mcmurdo": {
-        "name": "McMurdo Station",
-        "region": "Ross Island",
-        "lat": -77.8460,
-        "lon": 166.6681,
-        "fallback_temp": -23.0,
-        "fallback_wind": 14.0,
-    },
-    "south_pole": {
-        "name": "South Pole Station",
-        "region": "Amundsen-Scott (Inland Plateau)",
-        "lat": -90.0,
-        "lon": 0.0,
-        "fallback_temp": -63.0,
-        "fallback_wind": 8.0,
-    },
-    "vostok": {
-        "name": "Vostok Station",
-        "region": "Inland Ice Sheet",
-        "lat": -78.4644,
-        "lon": 106.8373,
-        "fallback_temp": -73.0,
-        "fallback_wind": 6.0,
-    },
+    }
 }
 
 
